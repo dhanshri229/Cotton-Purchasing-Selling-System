@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Edit Expense - Cotton Sales</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 30px; background-color: #f4f6f9; color: #333; }
+        .container { max-width: 850px; margin: auto; background: white; padding: 25px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        h2 { color: #2c3e50; }
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        label { font-weight: bold; font-size: 13px; }
+        input, select { width: 95%; padding: 10px; margin-top: 5px; border: 1px solid #ccc; border-radius: 4px; }
+        .btn-update { background-color: #2980b9; color: white; padding: 12px 25px; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; margin-top: 15px; }
+        .btn-cancel { background-color: #7f8c8d; color: white; padding: 12px 20px; text-decoration: none; border-radius: 4px; font-size: 16px; margin-left: 10px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Edit Expense Record #{{ expense.id }}</h2>
+        <p>Update labor count, wages, transport cost, or mill location.</p>
+
+        <form method="POST">
+            <div class="form-grid">
+                <div>
+                    <label>Date:</label><br>
+                    <input type="date" name="date" value="{{ expense.date }}" required>
+                </div>
+
+                <div>
+                    <label>Expense Category:</label><br>
+                    <select name="expense_type" required>
+                        <option value="Labor / Hamali" {{ 'selected' if expense.expense_type == 'Labor / Hamali' }}>Labor / Hamali</option>
+                        <option value="Vehicle & Fuel" {{ 'selected' if expense.expense_type == 'Vehicle & Fuel' }}>Vehicle & Fuel</option>
+                        <option value="Mill Transport" {{ 'selected' if expense.expense_type == 'Mill Transport' }}>Mill Transport</option>
+                        <option value="Other" {{ 'selected' if expense.expense_type == 'Other' }}>Other</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label>Mill Location:</label><br>
+                    <input type="text" name="mill_location" value="{{ expense.mill_location }}">
+                </div>
+
+                <div>
+                    <label>Number of Laborers (माणसे):</label><br>
+                    <input type="number" name="labor_count" id="e_labor_count" value="{{ expense.labor_count }}" oninput="recalc()">
+                </div>
+
+                <div>
+                    <label>Wage per Person (₹):</label><br>
+                    <input type="number" step="0.01" name="wage_per_person" id="e_wage_per_person" value="{{ expense.wage_per_person }}" oninput="recalc()">
+                </div>
+
+                <div>
+                    <label>Vehicle / Diesel Cost (₹):</label><br>
+                    <input type="number" step="0.01" name="transport_fuel_cost" id="e_fuel_cost" value="{{ expense.transport_fuel_cost }}" oninput="recalc()">
+                </div>
+
+                <div style="grid-column: span 2;">
+                    <label>Total Expense Amount (₹ Auto):</label><br>
+                    <input type="number" step="0.01" name="total_expense" id="e_total_expense" value="{{ expense.total_expense }}" readonly style="background-color: #f1f2f6; font-weight: bold; width: 97%;">
+                </div>
+            </div>
+
+            <button type="submit" class="btn-update">Update & Save</button>
+            <a href="/expense" class="btn-cancel">Cancel</a>
+        </form>
+    </div>
+
+    <script>
+        function recalc() {
+            let count = parseFloat(document.getElementById('e_labor_count').value) || 0;
+            let wage = parseFloat(document.getElementById('e_wage_per_person').value) || 0;
+            let fuel = parseFloat(document.getElementById('e_fuel_cost').value) || 0;
+            let total = (count * wage) + fuel;
+            document.getElementById('e_total_expense').value = total.toFixed(2);
+        }
+    </script>
+</body>
+</html>

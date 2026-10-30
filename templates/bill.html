@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Purchase Receipt - Bill #{{ bill.id }}</title>
+    <!-- Library to capture receipt as image -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f4f6f9; margin: 20px; color: #333; }
+        .receipt-box { max-width: 650px; margin: auto; background: white; padding: 30px; border: 2px solid #2c3e50; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        .header { text-align: center; border-bottom: 2px solid #2c3e50; padding-bottom: 12px; margin-bottom: 20px; }
+        .header h2 { margin: 0; color: #2c3e50; text-transform: uppercase; font-size: 24px; }
+        .header p { margin: 5px 0 0; color: #555; font-size: 14px; }
+        
+        .bill-meta { display: flex; justify-content: space-between; margin-bottom: 15px; font-size: 14px; font-weight: bold; }
+        .farmer-info { background: #f8f9fa; border: 1px solid #e1e8ed; padding: 15px; border-radius: 6px; margin-bottom: 20px; }
+        .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 14px; }
+        
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        table, th, td { border: 1px solid #333; }
+        th, td { padding: 10px; text-align: center; font-size: 14px; }
+        th { background-color: #f1f2f6; }
+
+        .payment-summary { margin-top: 20px; float: right; width: 300px; }
+        .payment-row { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px dashed #ccc; font-size: 14px; }
+        .payment-row.due { color: #e74c3c; font-weight: bold; font-size: 16px; border-bottom: 2px solid #e74c3c; }
+
+        .signatures { display: flex; justify-content: space-between; margin-top: 80px; padding: 0 20px; }
+        .sig-box { text-align: center; border-top: 1px solid #333; width: 180px; padding-top: 5px; font-size: 13px; font-weight: bold; }
+
+        .btn-bar { text-align: center; margin-bottom: 25px; }
+        .btn-wa-photo { background-color: #25D366; color: white; padding: 11px 22px; border: none; border-radius: 5px; font-size: 15px; font-weight: bold; cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+        .btn-wa-photo:hover { background-color: #1ebc59; }
+        
+        .btn-download-img { background-color: #2980b9; color: white; padding: 10px 18px; border: none; border-radius: 4px; cursor: pointer; font-size: 14px; font-weight: bold; margin-left: 10px; }
+        .btn-download-img:hover { background-color: #1f618d; }
+        
+        .btn-print { background-color: #2c3e50; color: white; padding: 10px 18px; border: none; border-radius: 4px; cursor: pointer; font-size: 14px; font-weight: bold; margin-left: 10px; }
+        .btn-back { background-color: #7f8c8d; color: white; padding: 10px 18px; text-decoration: none; border-radius: 4px; font-size: 14px; margin-right: 10px; }
+
+        @media print {
+            .btn-bar { display: none; }
+            body { background: white; margin: 0; }
+            .receipt-box { border: 2px solid #000; box-shadow: none; width: 100%; max-width: 100%; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="btn-bar">
+        <a href="/purchase_report" class="btn-back">⬅ Back</a>
+        
+        <!-- MAIN BUTTON: Copies Photo & Opens WhatsApp -->
+        <button class="btn-wa-photo" onclick="copyPhotoAndOpenWhatsApp()">📲 Send Photo to WhatsApp</button>
+        
+        <!-- Save as Photo to PC -->
+        <button class="btn-download-img" onclick="downloadBillPhoto()">📸 Save Photo</button>
+        
+        <!-- Print PDF -->
+        <button class="btn-print" onclick="window.print()">🖨️ Print PDF</button>
+    </div>
+
+    <!-- The Exact Receipt Container Captured as Image -->
+    <div class="receipt-box" id="billReceipt">
+        <div class="header">
+            <h2>COTTON PURCHASE RECEIPT</h2>
+            <p>Official Weighment Slip & Payment Invoice</p>
+        </div>
+
+        <div class="bill-meta">
+            <span>Receipt No: #{{ bill.id }}</span>
+            <span>Date: {{ bill.date }}</span>
+        </div>
+
+        <div class="farmer-info">
+            <div class="info-grid">
+                <div><strong>Farmer Name:</strong> {{ bill.farmer_name }}</div>
+                <div><strong>Mobile No:</strong> {{ bill.mobile if bill.mobile else '-' }}</div>
+                <div><strong>Aadhar No:</strong> {{ bill.aadhar_number if bill.aadhar_number else '-' }}</div>
+                <div><strong>Village / City:</strong> {{ bill.village if bill.village else '-' }}</div>
+            </div>
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Vehicle No</th>
+                    <th>Weight (Quintals)</th>
+                    <th>Rate / Qtl (₹)</th>
+                    <th>Total Amount (₹)</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>{{ bill.vehicle_number if bill.vehicle_number else '-' }}</td>
+                    <td><strong>{{ bill.weight }} Qtl</strong></td>
+                    <td>₹ {{ bill.rate }}</td>
+                    <td><strong>₹ {{ "%.2f"|format(bill.total_amount) }}</strong></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="payment-summary">
+            <div class="payment-row">
+                <span>Total Bill Amount:</span>
+                <span>₹ {{ "%.2f"|format(bill.total_amount) }}</span>
+            </div>
+            <div class="payment-row">
+                <span>Paid Amount:</span>
+                <span style="color: #27ae60; font-weight: bold;">₹ {{ "%.2f"|format(bill.paid_amount) }}</span>
+            </div>
+            <div class="payment-row due">
+                <span>Remaining Due:</span>
+                <span>₹ {{ "%.2f"|format(bill.total_amount - bill.paid_amount) }}</span>
+            </div>
+        </div>
+
+        <div style="clear: both;"></div>
+
+        <div class="signatures">
+            <div class="sig-box">Farmer Signature</div>
+            <div class="sig-box">Authorized Signature</div>
+        </div>
+    </div>
+
+    <script>
+        // फोटो थेट कॉपी करून WhatsApp उघडणे
+        function copyPhotoAndOpenWhatsApp() {
+            const receipt = document.getElementById('billReceipt');
+            let mobile = {{ (bill.mobile or '')|tojson }};
+            let cleanMobile = mobile.replace(/[^0-9]/g, '');
+            if (cleanMobile.length === 10) {
+                cleanMobile = '91' + cleanMobile;
+            }
+
+            // पावतीचा स्क्रीनशॉट / इमेज तयार करा
+            html2canvas(receipt, { scale: 2 }).then(canvas => {
+                canvas.toBlob(blob => {
+                    // १. फोटो क्लिपबोर्डवर आपोआप कॉपी करा
+                    try {
+                        const item = new ClipboardItem({ "image/png": blob });
+                        navigator.clipboard.write([item]).then(() => {
+                            alert("✅ बिलाचा फोटो कॉपी झाला आहे!\n\nWhatsApp उघडल्यावर फक्त 'Ctrl + V' (Paste) दाबा आणि Send करा!");
+                            window.open("https://web.whatsapp.com/send?phone=" + cleanMobile, '_blank');
+                        });
+                    } catch (err) {
+                        // जर थेट कॉपी सपोर्ट नसेल तर फोटो लगेच सेव्ह करून WhatsApp उघडा
+                        let link = document.createElement('a');
+                        link.download = 'Bill_Receipt_{{ bill.id }}.png';
+                        link.href = canvas.toDataURL('image/png');
+                        link.click();
+                        alert("✅ बिलाचा फोटो डाऊनलोड झाला आहे!\nWhatsApp मध्ये फक्त हा फोटो सेंड करा.");
+                        window.open("https://web.whatsapp.com/send?phone=" + cleanMobile, '_blank');
+                    }
+                });
+            });
+        }
+
+        // संगणकावर फोटो सेव्ह करणे
+        function downloadBillPhoto() {
+            const receipt = document.getElementById('billReceipt');
+            html2canvas(receipt, { scale: 2 }).then(canvas => {
+                let link = document.createElement('a');
+                link.download = 'Bill_Receipt_{{ bill.id }}_{{ bill.farmer_name }}.png';
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+            });
+        }
+    </script>
+</body>
+</html>

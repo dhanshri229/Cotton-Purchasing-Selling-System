@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Farmer Purchase Report & Bills - Cotton Sales</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 30px; background-color: #f4f6f9; }
+        .container { max-width: 1150px; margin: auto; background: white; padding: 25px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        h2 { color: #2c3e50; }
+        
+        .metrics-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin: 20px 0; }
+        .metric-card { padding: 15px; border-radius: 6px; color: white; text-align: center; }
+        .metric-card span { font-size: 13px; text-transform: uppercase; }
+        .metric-card h3 { margin: 8px 0 0; font-size: 22px; color: white; }
+        .bg-blue { background-color: #2980b9; }
+        .bg-green { background-color: #27ae60; }
+        .bg-red { background-color: #e74c3c; }
+
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        table, th, td { border: 1px solid #ddd; }
+        th, td { padding: 9px; text-align: left; font-size: 13px; }
+        th { background-color: #34495e; color: white; }
+        
+        .btn-bill { background-color: #27ae60; color: white; padding: 6px 12px; text-decoration: none; border-radius: 4px; font-weight: bold; font-size: 13px; }
+        .btn-bill:hover { background-color: #219150; }
+        a.home-link { text-decoration: none; color: #2980b9; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a class="home-link" href="/">Back to Home</a>
+        <h2>Farmer Purchase Report & Individual Bills</h2>
+
+        <div class="metrics-grid">
+            <div class="metric-card bg-blue">
+                <span>Total Cotton Purchase</span>
+                <h3>₹ {{ "%.2f"|format(total_purchase_amt) }}</h3>
+            </div>
+            <div class="metric-card bg-green">
+                <span>Total Amount Paid</span>
+                <h3>₹ {{ "%.2f"|format(total_paid_amt) }}</h3>
+            </div>
+            <div class="metric-card bg-red">
+                <span>Total Outstanding Due</span>
+                <h3>₹ {{ "%.2f"|format(total_purchase_amt - total_paid_amt) }}</h3>
+            </div>
+        </div>
+
+        <hr style="margin-top: 30px;">
+
+        <h3>All Farmers Purchase List</h3>
+        <table>
+            <tr>
+                <th>Receipt ID</th>
+                <th>Date</th>
+                <th>Farmer Name</th>
+                <th>Mobile</th>
+                <th>Weight (Q)</th>
+                <th>Rate (₹)</th>
+                <th>Total (₹)</th>
+                <th>Paid (₹)</th>
+                <th>Due (₹)</th>
+                <th>Individual Bill</th>
+            </tr>
+            {% for p in purchases %}
+            {% set due = p.total_amount - p.paid_amount %}
+            <tr>
+                <td>#{{ p.id }}</td>
+                <td>{{ p.date }}</td>
+                <td><strong>{{ p.farmer_name }}</strong></td>
+                <td>{{ p.mobile if p.mobile else '-' }}</td>
+                <td>{{ p.weight }} Qtl</td>
+                <td>₹ {{ p.rate }}</td>
+                <td>₹ {{ p.total_amount }}</td>
+                <td><span style="color: #27ae60; font-weight: bold;">₹ {{ p.paid_amount }}</span></td>
+                <td><span style="color: {{ '#e74c3c' if due > 0 else '#27ae60' }}; font-weight: bold;">₹ {{ "%.2f"|format(due) }}</span></td>
+                <td>
+                    <a href="/bill/{{ p.id }}" target="_blank" class="btn-bill">Print Farmer Bill</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+</body>
+</html>

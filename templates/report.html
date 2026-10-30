@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Purchase & Sales Reports - Cotton Sales</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 30px; background-color: #f4f6f9; }
+        .container { max-width: 1100px; margin: auto; background: white; padding: 25px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        h2, h3 { color: #2c3e50; }
+        
+        .metrics-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin: 20px 0; }
+        .metric-card { padding: 15px; border-radius: 6px; color: white; text-align: center; }
+        .metric-card span { font-size: 13px; text-transform: uppercase; }
+        .metric-card h3 { margin: 8px 0 0; font-size: 20px; color: white; }
+        .bg-blue { background-color: #2980b9; }
+        .bg-green { background-color: #27ae60; }
+        .bg-red { background-color: #e74c3c; }
+        .bg-purple { background-color: #8e44ad; }
+
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; margin-bottom: 30px; }
+        table, th, td { border: 1px solid #ddd; }
+        th, td { padding: 8px; text-align: left; font-size: 13px; }
+        th { background-color: #34495e; color: white; }
+        
+        .btn-print { background-color: #34495e; color: white; padding: 8px 16px; border: none; border-radius: 4px; cursor: pointer; float: right; }
+        a.home-link { text-decoration: none; color: #2980b9; font-weight: bold; }
+
+        @media print {
+            .no-print { display: none; }
+            body { margin: 0; background: white; }
+            .container { box-shadow: none; border: none; width: 100%; max-width: 100%; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="no-print">
+            <a class="home-link" href="/">Back to Home</a>
+            <button class="btn-print" onclick="window.print()">Print Report (PDF)</button>
+        </div>
+        
+        <h2>Cotton Business Overview & Audit Report</h2>
+
+        <!-- Financial Summary -->
+        <div class="metrics-grid">
+            <div class="metric-card bg-blue">
+                <span>Total Cotton Purchase</span>
+                <h3>₹ {{ "%.2f"|format(total_purchase_amt) }}</h3>
+            </div>
+            <div class="metric-card bg-green">
+                <span>Total Amount Paid</span>
+                <h3>₹ {{ "%.2f"|format(total_paid_amt) }}</h3>
+            </div>
+            <div class="metric-card bg-red">
+                <span>Total Outstanding Due</span>
+                <h3>₹ {{ "%.2f"|format(total_purchase_amt - total_paid_amt) }}</h3>
+            </div>
+            <div class="metric-card bg-purple">
+                <span>Total Cotton Sales</span>
+                <h3>₹ {{ "%.2f"|format(total_sales_amt) }}</h3>
+            </div>
+        </div>
+
+        <hr>
+
+        <!-- Purchases Table -->
+        <h3>Recent Cotton Purchases (खरेदी यादी)</h3>
+        <table>
+            <tr>
+                <th>ID</th>
+                <th>Date</th>
+                <th>Farmer Name</th>
+                <th>Weight (Q)</th>
+                <th>Rate (₹)</th>
+                <th>Total (₹)</th>
+                <th>Paid (₹)</th>
+                <th>Due (₹)</th>
+            </tr>
+            {% for p in purchases %}
+            <tr>
+                <td>#{{ p.id }}</td>
+                <td>{{ p.date }}</td>
+                <td>{{ p.farmer_name }}</td>
+                <td>{{ p.weight }}</td>
+                <td>{{ p.rate }}</td>
+                <td>{{ p.total_amount }}</td>
+                <td>{{ p.paid_amount }}</td>
+                <td>{{ "%.2f"|format(p.total_amount - p.paid_amount) }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+
+        <!-- Sales Table -->
+        <h3>Recent Cotton Sales (विक्री यादी)</h3>
+        <table>
+            <tr>
+                <th>Bill ID</th>
+                <th>Date</th>
+                <th>Buyer Name</th>
+                <th>Weight Sold (Q)</th>
+                <th>Selling Rate (₹)</th>
+                <th>Total Revenue (₹)</th>
+            </tr>
+            {% for s in sales %}
+            <tr>
+                <td>#{{ s.id }}</td>
+                <td>{{ s.date }}</td>
+                <td>{{ s.buyer_name }}</td>
+                <td>{{ s.weight }}</td>
+                <td>{{ s.rate }}</td>
+                <td><strong>₹ {{ "%.2f"|format(s.total_amount) }}</strong></td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+</body>
+</html>

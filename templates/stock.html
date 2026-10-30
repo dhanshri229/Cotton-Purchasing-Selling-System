@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Cotton Stock Report - Cotton Sales</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 30px; background-color: #f4f6f9; }
+        .container { max-width: 950px; margin: auto; background: white; padding: 25px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        h2 { color: #2c3e50; }
+        
+        /* Stock Overview Cards */
+        .stock-cards { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; margin: 25px 0; }
+        .card { padding: 20px; border-radius: 8px; color: white; text-align: center; }
+        .card span { font-size: 14px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .card h3 { margin: 10px 0 0; font-size: 28px; }
+        
+        .card-blue { background-color: #2980b9; }
+        .card-purple { background-color: #8e44ad; }
+        .card-green { background-color: #27ae60; }
+        .card-warning { background-color: #e67e22; }
+
+        .info-box { background: #ecf0f1; padding: 18px; border-radius: 6px; margin-top: 25px; font-size: 15px; line-height: 1.8; color: #2c3e50; }
+        a.home-link { text-decoration: none; color: #2980b9; font-weight: bold; }
+        
+        .status-badge { display: inline-block; padding: 5px 12px; border-radius: 20px; font-weight: bold; font-size: 14px; color: white; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a class="home-link" href="/">Back to Home</a>
+        <h2>Live Cotton Stock Report (साठा अहवाल)</h2>
+
+        <!-- Stock Cards -->
+        <div class="stock-cards">
+            <div class="card card-blue">
+                <span>Total Cotton Purchased</span>
+                <h3>{{ "%.2f"|format(total_purchased_weight) }} Qtl</h3>
+            </div>
+
+            <div class="card card-purple">
+                <span>Total Cotton Sold</span>
+                <h3>{{ "%.2f"|format(total_sold_weight) }} Qtl</h3>
+            </div>
+
+            <div class="card {{ 'card-green' if current_stock > 0 else 'card-warning' }}">
+                <span>Available In Stock</span>
+                <h3>{{ "%.2f"|format(current_stock) }} Qtl</h3>
+            </div>
+        </div>
+
+        <!-- Inventory Summary Box -->
+        <div class="info-box">
+            <h3>Inventory Details</h3>
+            <p><strong>Total Purchased Cotton:</strong> {{ "%.2f"|format(total_purchased_weight) }} Quintals</p>
+            <p><strong>Total Sold Cotton:</strong> {{ "%.2f"|format(total_sold_weight) }} Quintals</p>
+            <p><strong>Current Godown Balance:</strong> <span style="font-size: 18px; color: #27ae60; font-weight: bold;">{{ "%.2f"|format(current_stock) }} Quintals</span></p>
+            <p><strong>Stock Status:</strong> 
+                {% if current_stock > 10 %}
+                    <span class="status-badge" style="background-color: #27ae60;">In Stock (सुरक्षित साठा)</span>
+                {% elif current_stock > 0 %}
+                    <span class="status-badge" style="background-color: #e67e22;">Low Stock (कमी साठा)</span>
+                {% else %}
+                    <span class="status-badge" style="background-color: #e74c3c;">Out of Stock (निरंक)</span>
+                {% endif %}
+            </p>
+        </div>
+    </div>
+</body>
+</html>

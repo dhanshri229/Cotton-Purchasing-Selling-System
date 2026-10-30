@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Cotton Selling - Cotton Sales</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 30px; background-color: #f4f6f9; }
+        .container { max-width: 1050px; margin: auto; background: white; padding: 25px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        h2 { color: #2c3e50; }
+        
+        /* Summary Cards */
+        .summary-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 25px; }
+        .card { padding: 15px; border-radius: 6px; color: white; text-align: center; }
+        .card h3 { margin: 5px 0; font-size: 22px; }
+        .card-purple { background-color: #8e44ad; }
+        .card-green { background-color: #27ae60; }
+
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        label { font-weight: bold; font-size: 14px; }
+        input { width: 95%; padding: 10px; margin-top: 5px; border: 1px solid #ccc; border-radius: 4px; }
+        .auto-field { background-color: #f1f2f6; font-weight: bold; }
+        .btn-save { background-color: #8e44ad; color: white; padding: 12px 25px; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; margin-top: 15px; }
+        .btn-save:hover { background-color: #732d91; }
+        .btn-delete { background-color: #e74c3c; color: white; padding: 5px 10px; text-decoration: none; border-radius: 4px; font-size: 13px; }
+        .btn-delete:hover { background-color: #c0392b; }
+        
+        table { width: 100%; border-collapse: collapse; margin-top: 25px; }
+        table, th, td { border: 1px solid #ddd; }
+        th, td { padding: 9px; text-align: left; font-size: 14px; }
+        th { background-color: #34495e; color: white; }
+        a.home-link { text-decoration: none; color: #2980b9; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a class="home-link" href="/">Back to Home</a>
+        <h2>Cotton Selling Entry</h2>
+
+        <!-- Top Overview Cards -->
+        <div class="summary-cards">
+            <div class="card card-purple">
+                <span>Total Cotton Sold (Weight)</span>
+                <h3>{{ "%.2f"|format(total_sold_weight) }} Qtl</h3>
+            </div>
+            <div class="card card-green">
+                <span>Total Sales Revenue</span>
+                <h3>₹ {{ "%.2f"|format(total_sales_amount) }}</h3>
+            </div>
+        </div>
+
+        <!-- Selling Form -->
+        <form method="POST">
+            <div class="form-grid">
+                <div>
+                    <label>Buyer / Mill / Trader Name:</label><br>
+                    <input type="text" name="buyer_name" required placeholder="e.g. ABC Spinning Mill">
+                </div>
+
+                <div>
+                    <label>Selling Date:</label><br>
+                    <input type="date" name="date" required id="s_date">
+                </div>
+
+                <div>
+                    <label>Weight Sold (in Quintals):</label><br>
+                    <input type="number" step="0.01" name="weight" id="s_weight" required placeholder="e.g. 50.00" oninput="calculateSaleTotal()">
+                </div>
+
+                <div>
+                    <label>Selling Rate (per Quintal ₹):</label><br>
+                    <input type="number" step="0.01" name="rate" id="s_rate" required placeholder="e.g. 7800" oninput="calculateSaleTotal()">
+                </div>
+
+                <div>
+                    <label>Total Sale Amount (₹ Auto):</label><br>
+                    <input type="number" step="0.01" name="total_amount" id="s_total" readonly class="auto-field">
+                </div>
+            </div>
+
+            <button type="submit" class="btn-save">Save Sales Entry</button>
+        </form>
+
+        <hr style="margin-top: 35px;">
+
+        <h3>Sales Records</h3>
+        <table>
+            <tr>
+                <th>Bill ID</th>
+                <th>Date</th>
+                <th>Buyer Name</th>
+                <th>Weight (Qtl)</th>
+                <th>Rate (₹)</th>
+                <th>Total Sale Amount (₹)</th>
+                <th>Action</th>
+            </tr>
+            {% for s in sales %}
+            <tr>
+                <td>#{{ s.id }}</td>
+                <td>{{ s.date }}</td>
+                <td>{{ s.buyer_name }}</td>
+                <td>{{ s.weight }}</td>
+                <td>{{ s.rate }}</td>
+                <td><strong style="color: #27ae60;">₹ {{ "%.2f"|format(s.total_amount) }}</strong></td>
+                <td>
+                    <a href="/delete_selling/{{ s.id }}" 
+                       class="btn-delete" 
+                       onclick="return confirm('Are you sure you want to delete this sale record?');">
+                       Delete
+                    </a>
+                </td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+
+    <script>
+        document.getElementById('s_date').valueAsDate = new Date();
+
+        function calculateSaleTotal() {
+            let weight = parseFloat(document.getElementById('s_weight').value) || 0;
+            let rate = parseFloat(document.getElementById('s_rate').value) || 0;
+            let total = weight * rate;
+            document.getElementById('s_total').value = total.toFixed(2);
+        }
+    </script>
+</body>
+</html>
